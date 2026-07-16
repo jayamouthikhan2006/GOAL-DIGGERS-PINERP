@@ -203,7 +203,14 @@ export async function updateComponentConsumption(id: number, updates: { id: numb
     throw new AppError(400, "Consumed quantity can only be recorded while Confirmed or In Progress");
   }
   for (const u of updates) {
-    await prisma.moComponent.update({ where: { id: u.id }, data: { consumedQty: u.consumedQty } });
+    // Scoped by manufacturingOrderId, not just the component's own id — a
+    // component id belonging to a DIFFERENT MO must not be reachable through
+    // this MO's URL, or a caller could corrupt consumption data on orders
+    // they were never authorized to touch.
+    await prisma.moComponent.updateMany({
+      where: { id: u.id, manufacturingOrderId: id },
+      data: { consumedQty: u.consumedQty },
+    });
   }
   return prisma.manufacturingOrder.findUnique({ where: { id }, include: includeAll });
 }
@@ -215,7 +222,12 @@ export async function updateWorkOrderDuration(id: number, updates: { id: number;
     throw new AppError(400, "Real duration can only be recorded while Confirmed or In Progress");
   }
   for (const u of updates) {
-    await prisma.moWorkOrder.update({ where: { id: u.id }, data: { realDurationMins: u.realDurationMins } });
+    // Same ownership scoping as updateComponentConsumption above — a
+    // work-order id from a different MO must not be writable via this MO's URL.
+    await prisma.moWorkOrder.updateMany({
+      where: { id: u.id, manufacturingOrderId: id },
+      data: { realDurationMins: u.realDurationMins },
+    });
   }
   return prisma.manufacturingOrder.findUnique({ where: { id }, include: includeAll });
 }

@@ -84,7 +84,11 @@ type RequestOptions = {
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, portal = false } = options;
 
-  const headers: Record<string, string> = {};
+  // Backend requires this on every mutating request as a CSRF guard — a
+  // custom header forces a CORS preflight that the origin-locked backend
+  // config rejects for anyone but this frontend, which a bare cross-site
+  // <form> POST (the CSRF attack this defends against) can never set.
+  const headers: Record<string, string> = { 'X-Requested-With': 'XMLHttpRequest' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
   const res = await fetch(`${BASE_URL}${path}`, {

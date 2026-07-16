@@ -2,6 +2,11 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import { requireAdmin } from "../../middleware/rbac.middleware";
 import { uploadPhoto } from "../../middleware/upload.middleware";
+import { validateRequest } from "../../middleware/validateRequest";
+import {
+  createUserSchema, updateUserSchema, updateMeSchema,
+  changeMyPasswordSchema, adminResetPasswordSchema,
+} from "./users.validation";
 import {
   listUsersHandler, getUserHandler, createUserHandler, updateUserHandler,
   disableUserHandler, enableUserHandler, adminResetPasswordHandler,
@@ -15,16 +20,16 @@ usersRouter.use(authMiddleware);
 usersRouter.get("/", requireAdmin, listUsersHandler);
 usersRouter.get("/generate-password", requireAdmin, generatePasswordHandler);
 usersRouter.get("/:id", requireAdmin, getUserHandler);
-usersRouter.post("/", requireAdmin, createUserHandler);
-usersRouter.patch("/:id", requireAdmin, updateUserHandler);
+usersRouter.post("/", requireAdmin, validateRequest(createUserSchema), createUserHandler);
+usersRouter.patch("/:id", requireAdmin, validateRequest(updateUserSchema), updateUserHandler);
 usersRouter.post("/:id/disable", requireAdmin, disableUserHandler);
 usersRouter.post("/:id/enable", requireAdmin, enableUserHandler);
-usersRouter.post("/:id/reset-password", requireAdmin, adminResetPasswordHandler);
+usersRouter.post("/:id/reset-password", requireAdmin, validateRequest(adminResetPasswordSchema), adminResetPasswordHandler);
 
 // Any logged-in user: their own profile
 export const meRouter = Router();
 meRouter.use(authMiddleware);
 meRouter.get("/", getMeHandler);
-meRouter.patch("/", updateMeHandler);
+meRouter.patch("/", validateRequest(updateMeSchema), updateMeHandler);
 meRouter.post("/photo", uploadPhoto, updateMyPhotoHandler);
-meRouter.post("/change-password", changeMyPasswordHandler);
+meRouter.post("/change-password", validateRequest(changeMyPasswordSchema), changeMyPasswordHandler);

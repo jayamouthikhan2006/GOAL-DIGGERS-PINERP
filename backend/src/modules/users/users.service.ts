@@ -192,7 +192,12 @@ export async function getMe(userId: number) {
 interface UpdateMeInput { name?: string; address?: string; mobile?: string; phone?: string; }
 
 export async function updateMe(userId: number, data: UpdateMeInput) {
-  return prisma.user.update({ where: { id: userId }, data, select: SAFE_USER_SELECT });
+  // Explicit allow-list, not a passthrough spread — req.body must never
+  // reach prisma.user.update() directly here, since User also carries
+  // isAdmin/roleId/isActive/etc. A non-admin PATCHing their own profile
+  // must not be able to smuggle privilege-escalating fields into `data`.
+  const { name, address, mobile, phone } = data;
+  return prisma.user.update({ where: { id: userId }, data: { name, address, mobile, phone }, select: SAFE_USER_SELECT });
 }
 
 export async function updateMyPhoto(userId: number, photoUrl: string) {

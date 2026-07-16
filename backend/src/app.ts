@@ -1,8 +1,10 @@
 import express, { Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/errorHandler";
+import { requireCsrfHeader } from "./middleware/csrf.middleware";
 import { UPLOAD_ROOT } from "./middleware/upload.middleware";
 import { authRouter, portalAuthRouter } from "./modules/auth/auth.routes";
 import { usersRouter, meRouter } from "./modules/users/users.routes";
@@ -35,11 +37,26 @@ import { sessionsRouter } from "./modules/sessions/sessions.routes";
 export function createApp(): Express {
   const app = express();
 
+  // This is a pure JSON API (the React app is served separately by Vite), so
+  // the default CSP would only fight itself — disable it. Keep the other
+  // protections: no X-Powered-By, frameguard, noSniff, HSTS in prod. Uploaded
+  // images are fetched cross-origin by the frontend, so relax CORP for them.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      hsts: env.NODE_ENV === "production",
+    })
+  );
+
   // credentials: true + an explicit origin (never "*") are both required for
   // the browser to send/accept the HttpOnly session cookies cross-port.
   app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
   app.use(cookieParser());
   app.use(express.json());
+  // Cross-site request forgery guard — see middleware/csrf.middleware.ts for
+  // why this is needed even with the origin-locked CORS config above.
+  app.use(requireCsrfHeader);
   app.use("/uploads", express.static(UPLOAD_ROOT));
 
   app.get("/api/health", (req, res) => {

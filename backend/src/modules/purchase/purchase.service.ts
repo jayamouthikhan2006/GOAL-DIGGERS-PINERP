@@ -68,8 +68,11 @@ interface CreateInput {
   lines: LineInput[];
 }
 
-async function resolveLineCost(productId: number, provided?: number): Promise<number> {
-  if (provided !== undefined) return provided;
+// See sales.service.ts resolveLinePrice for why the client-supplied value
+// is ignored outright rather than only defaulted: the frontend never lets
+// a user edit this, so honoring an override only opens a fabricated-total
+// attack surface with no matching legitimate use.
+async function resolveLineCost(productId: number, _provided?: number): Promise<number> {
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) throw new AppError(400, "Referenced product does not exist");
   return Number(product.costPrice);
