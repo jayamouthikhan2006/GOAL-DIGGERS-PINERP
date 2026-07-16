@@ -7,7 +7,10 @@ let sharedSocket: Socket | null = null;
 
 function getSocket(): Socket {
   if (!sharedSocket) {
-    sharedSocket = io(BASE_URL, { transports: ['websocket'], autoConnect: true });
+    // withCredentials so the HttpOnly session cookie rides along on the
+    // handshake — the backend now authenticates sockets from that cookie
+    // (see sockets/socket.server.ts) instead of trusting a client-supplied userId.
+    sharedSocket = io(BASE_URL, { transports: ['websocket'], autoConnect: true, withCredentials: true });
   }
   return sharedSocket;
 }

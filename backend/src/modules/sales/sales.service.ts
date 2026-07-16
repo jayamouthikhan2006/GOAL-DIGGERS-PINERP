@@ -92,8 +92,13 @@ interface CreateInput {
   lines: LineInput[];
 }
 
-async function resolveLinePrice(productId: number, provided?: number): Promise<number> {
-  if (provided !== undefined) return provided;
+// The client-supplied unit price is never trusted, even when present — the
+// frontend only ever pre-fills it for display before submit (it's rendered
+// read-only, never as an editable input), so there's no legitimate flow
+// that needs a caller-chosen price. Always deriving it server-side from
+// Product.salesPrice closes off crafting an order with a fabricated total
+// via a raw request (e.g. Burp Repeater) that a client can't otherwise send.
+async function resolveLinePrice(productId: number, _provided?: number): Promise<number> {
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) throw new AppError(400, "Referenced product does not exist");
   return Number(product.salesPrice);

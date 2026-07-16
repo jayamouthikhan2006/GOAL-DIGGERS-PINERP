@@ -13,18 +13,18 @@ export const permissionRowSchema = z.object({
 
 export const createUserSchema = z.object({
   loginId: z.string().min(6).max(12),
-  email: z.email(),
-  password: z.string().min(8),
-  name: z.string().min(1),
-  position: z.string().optional(),
+  email: z.email().max(200),
+  password: z.string().min(8).max(200),
+  name: z.string().min(1).max(200),
+  position: z.string().max(200).optional(),
   isAdmin: z.boolean().optional().default(false),
 });
 
 export const updateUserSchema = z.object({
-  name: z.string().min(1).optional(),
-  address: z.string().optional(),
-  mobile: z.string().optional(),
-  position: z.string().optional(),
+  name: z.string().min(1).max(200).optional(),
+  address: z.string().max(500).optional(),
+  mobile: z.string().max(30).optional(),
+  position: z.string().max(200).optional(),
   isAdmin: z.boolean().optional(),
   permissions: z.array(permissionRowSchema).optional(),
 });
@@ -33,7 +33,16 @@ export const updateUserSchema = z.object({
 // if the client sends them, those fields are simply not in this schema so
 // validateRequest strips them before the handler ever sees them.
 export const updateMeSchema = z.object({
-  name: z.string().min(1).optional(),
-  address: z.string().optional(),
-  mobile: z.string().optional(),
+  name: z.string().min(1).max(200).optional(),
+  address: z.string().max(500).optional(),
+  mobile: z.string().max(30).optional(),
+});
+
+export const changeMyPasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8).max(200),
+});
+
+export const adminResetPasswordSchema = z.object({
+  password: z.string().min(8).max(200),
 });

@@ -82,6 +82,7 @@ export async function uploadMyPhoto(file: File): Promise<User> {
   const res = await fetch(`${BASE_URL}/api/me/photo`, {
     method: 'POST',
     credentials: 'include',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
     body: formData,
   });
 

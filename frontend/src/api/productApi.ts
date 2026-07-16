@@ -41,6 +41,7 @@ export async function uploadProductPhoto(id: number, file: File): Promise<Produc
   const res = await fetch(`${BASE_URL}/api/products/${id}/photo`, {
     method: 'POST',
     credentials: 'include',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
     body: formData,
   });
 
