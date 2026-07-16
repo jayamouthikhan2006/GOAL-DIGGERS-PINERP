@@ -3,10 +3,10 @@
 PINERP is an explainable, intelligence-first ERP designed for growing manufacturers that cannot afford enterprise consultants but still need enterprise-level visibility.
 Traditional ERPs tell businesses what happened. PINERP tells them what is happening, why it is happening, and what they should do next.
 
-**Contributors**    
-Srushti D  
+**Contributors**
+jaya mouthikhan 
+preenithi
 Vaishnav Adithya  
-Shyaam Ganesh  
 Balachandar  
 
 **Problem Statement**
